@@ -1,4 +1,4 @@
-package ticker
+package cream
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-// Info
+// Info dto
 type Info struct {
 	Symbol string
 	EvOverEbitda float64
@@ -26,12 +26,12 @@ func getInfo(symbol string) *Info {
 		tickerInfo.PERatio, err = strconv.ParseFloat(km.Metrics[0].PERatio, 64)
 	}
 	if (err != nil) {
-		fmt.Println(err)
+		// fmt.Println(err)
 	}
 	return tickerInfo
 }
 
-// InfoFetcher Fetches fmp.KeyMetric info
+// InfoFetcher Fetches KeyMetric info from FMP
 type InfoFetcher struct {
 	Count int
 }

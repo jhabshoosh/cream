@@ -1,11 +1,11 @@
-package ticker
+package cream
 
 import (
 	"fmt"
 	"github.com/jhabshoo/cream/fmp"
 )
 
-// QuoteFetcher
+// QuoteFetcher fetches from FMP for symbols
 type QuoteFetcher struct {
 	Count int
 }
@@ -23,7 +23,7 @@ func getQuote(symbol string) *fmp.CompanyQuote {
 	return new(fmp.CompanyQuote)
 }
 
-// Process processes symbols from channel
+// Process consumes from symbol channel and emits CompanyQuotes
 func (qf *QuoteFetcher) Process(in <- chan string) <- chan *fmp.CompanyQuote {
 	out := make(chan *fmp.CompanyQuote)
 	go func() {

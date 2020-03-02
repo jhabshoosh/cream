@@ -1,5 +1,9 @@
 package fmp
 
+import (
+	"fmt"
+)
+
 // KeyMetrics
 type KeyMetrics struct {
 	EV string `json:"Enterprise Value"`
@@ -45,4 +49,32 @@ type CompanyQuote struct {
 
 type CompanyQuoteResponse struct {
 	Quotes []CompanyQuote
+}
+
+type CompanyProfileResponse struct {
+	Symbol string
+	Profile CompanyProfile `json:"profile"`
+}
+
+type CompanyProfile struct {
+	Price float64
+	Beta string
+	VolAvg string
+	MarketCap string
+	LastDiv string
+	Range string
+	Changes float64
+	ChangesPercentage string
+	CompanyName string
+	Exchange string
+	Industry string
+	Website string
+	Description string
+	CEO string
+	Sector string
+	Image string
+}
+
+func (cpr CompanyProfileResponse) String() string {
+	return fmt.Sprintf("%s\t%s\t%f", cpr.Symbol, cpr.Profile.CompanyName, cpr.Profile.Price)
 }

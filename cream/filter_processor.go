@@ -1,26 +1,30 @@
-package ticker
+package cream
 
 import (
 	"fmt"
 	"github.com/jhabshoo/cream/fmp"
 )
 
+// FundamentalFilterProcessor filters companys based on rules that can be applied to Info/Key Metrics
 type FundamentalFilterProcessor struct {
 	GoodCount int
 	BadCount int
 }
 
+// SecondaryFilterProcessor filters companys based on rules that can be applied to Quotes
 type SecondaryFilterProcessor struct {
 	WellKnowCount int
 	LatestEarningsCount int
 	BadCount int
 }
 
+// SecondaryFilterOutputMessage is emitted by SecondaryFilterProcessor.Process
 type SecondaryFilterOutputMessage struct {
 	Symbol string
 	WellKnown bool
 }
 
+// NewSFOutputMessage SecondaryFilterOutputMessage Constructor
 func NewSFOutputMessage(symbol string, wellKnown bool) *SecondaryFilterOutputMessage {
 	msg := new(SecondaryFilterOutputMessage)
 	msg.Symbol = symbol
@@ -38,6 +42,7 @@ func (sfom SecondaryFilterOutputMessage) String() string {
 	return fmt.Sprintf("%s - %s", prefix, sfom.Symbol)
 }
 
+// Process consumes from an Info channel and emits passing symbols
 func (ffp *FundamentalFilterProcessor) Process(in <- chan *Info) <- chan string {
 	out := make(chan string)
 	go func() {
@@ -54,6 +59,7 @@ func (ffp *FundamentalFilterProcessor) Process(in <- chan *Info) <- chan string 
 	return out
 }
 
+// Process consumes from a CompanyQuote channel and emits passes as SecondaryFilterOutputMessage
 func (sfp *SecondaryFilterProcessor) Process(in <- chan *fmp.CompanyQuote) <- chan *SecondaryFilterOutputMessage {
 	out := make(chan *SecondaryFilterOutputMessage)
 	go func() {

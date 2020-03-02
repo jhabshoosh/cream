@@ -11,6 +11,7 @@ import (
 const keyMetricsURL = "https://financialmodelingprep.com/api/v3/company-key-metrics/"
 const allCompaniesURL = "https://financialmodelingprep.com/api/v3/company/stock/list"
 const companyQuoteURL = "https://financialmodelingprep.com/api/v3/quote/"
+const companyProfileURL = "https://financialmodelingprep.com/api/v3/company/profile/"
 
 func GetSymbolsList() []Stock {
 	res, err := http.Get(allCompaniesURL)
@@ -66,4 +67,20 @@ func FetchCompanyQuote(symbols []string) ([]CompanyQuote, error) {
 		fmt.Println("err unmarshalling:", err)
 	}
 	return cqr, err
+}
+
+func FetchCompanyProfile(symbol string) (CompanyProfileResponse, error) {
+	res, err := http.Get(companyProfileURL + symbol)
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+			panic(err.Error())
+	}
+
+	var cpr CompanyProfileResponse
+	err = json.Unmarshal(body, &cpr)
+	if (err != nil) {
+		fmt.Println("err unmarshalling:", err)
+	}
+	return cpr, err
 }
