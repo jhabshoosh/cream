@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/cosiner/argv v0.0.1 // indirect
 	github.com/go-delve/delve v1.4.0 // indirect
+	github.com/jhabshoo/fmp v0.0.0-20200303020018-af8b374c800d
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/markcheno/go-quote v0.0.0-20191213010133-318ed70f5b44
 	github.com/markcheno/go-talib v0.0.0-20190307022042-cd53a9264d70

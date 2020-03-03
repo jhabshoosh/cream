@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/jhabshoo/cream/fmp"
+	"github.com/jhabshoo/fmp"
 	"time"
 	"log"
 	s "strings"

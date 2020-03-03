@@ -2,7 +2,7 @@ package cream
 
 import (
 	"fmt"
-	"github.com/jhabshoo/cream/fmp"
+	"github.com/jhabshoo/fmp"
 )
 
 // FundamentalFilterProcessor filters companys based on rules that can be applied to Info/Key Metrics

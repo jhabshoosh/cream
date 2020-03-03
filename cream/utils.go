@@ -1,7 +1,7 @@
 package cream
 
 import (	
-	"github.com/jhabshoo/cream/fmp"
+	"github.com/jhabshoo/fmp"
 	"sync"
 	
 )
