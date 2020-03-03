@@ -2,12 +2,12 @@ package company
 
 import (
 	"fmt"
-	"github.com/jhabshoo/fmp"
+	fmp "github.com/jhabshoo/fmp/client"
 )
 
 
-// CompanyProfileFetcher fetches CompanyProfile form channel of symbols
-type CompanyProfileFetcher struct {
+// CompanyProfileStage fetches CompanyProfile form channel of symbols
+type CompanyProfileStage struct {
 	Count int
 }
 
@@ -20,7 +20,7 @@ func getCompanyProfile(symbol string) fmp.CompanyProfileResponse {
 }
 
 // Process Consumes from symbol channel and emits CompanyProfileResponses
-func (cpf *CompanyProfileFetcher) Process(in <- chan string) <- chan *fmp.CompanyProfileResponse {
+func (cpf *CompanyProfileStage) Process(in <- chan string) <- chan *fmp.CompanyProfileResponse {
 	out := make(chan *fmp.CompanyProfileResponse)
 	go func() {
 		for v := range in {

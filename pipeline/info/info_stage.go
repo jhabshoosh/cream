@@ -2,7 +2,7 @@ package info
 
 import (
 	"fmt"
-	"github.com/jhabshoo/fmp"
+	fmp "github.com/jhabshoo/fmp/client"
 	"strconv"
 )
 
@@ -31,19 +31,24 @@ func getInfo(symbol string) *Info {
 	return tickerInfo
 }
 
-// InfoFetcher Fetches KeyMetric info from FMP
-type InfoFetcher struct {
-	Count int
+// InfoStage Fetches KeyMetric info from FMP
+type InfoStage struct {
+	GoodCount int
+	BadCount int
 }
 
 // Process processes symbols from channel
-func (cip *InfoFetcher) Process(in <- chan string) <- chan *Info {
+func (cip *InfoStage) Process(in <- chan string) <- chan *Info {
 	out := make(chan *Info)
 	go func() {
 		for v := range in {
 			ci := getInfo(v)
-			cip.Count++
-			out <- ci
+			if (multipleFilterRule(ci) && peRatioFilterRule(ci)) {
+				cip.GoodCount++
+				out <- ci
+			} else {
+				cip.BadCount++
+			}
 		}
 		close(out)
 	}()

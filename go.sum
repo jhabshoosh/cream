@@ -54,6 +54,8 @@ github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NH
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/jhabshoo/fmp v0.0.0-20200303020018-af8b374c800d h1:FFEZzViSfzCvKfEMU8roUU9aBXnAzG8gubW6aPhYSfA=
 github.com/jhabshoo/fmp v0.0.0-20200303020018-af8b374c800d/go.mod h1:uGTCvtjjPIq5tiPYl6nN9S+hRKLcmOxN5oyzSB7jhWA=
+github.com/jhabshoo/fmp v0.0.0-20200303032012-c82415da4f57 h1:0p+S9X6FHxaxXFVfcKUxllEuF1NA5OqLWqlemZwqTc4=
+github.com/jhabshoo/fmp v0.0.0-20200303032012-c82415da4f57/go.mod h1:uGTCvtjjPIq5tiPYl6nN9S+hRKLcmOxN5oyzSB7jhWA=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
 github.com/julienschmidt/httprouter v1.2.0/go.mod h1:SYymIcj16QtmaHHD7aYtjjsJG7VTCxuUUipMqKk8s4w=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
