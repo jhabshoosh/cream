@@ -1,4 +1,4 @@
-package cream
+package info
 
 import (
 	"fmt"

@@ -1,19 +1,20 @@
-package cream
+package utils
 
 import (	
 	"github.com/jhabshoo/fmp"
+	"github.com/jhabshoo/cream/info"
+	"github.com/jhabshoo/cream/filter"
 	"sync"
-	
 )
 
 // MergeInfoChannel merges a list of Info channels
-func MergeInfoChannel(cs ...<-chan *Info) <-chan *Info {
+func MergeInfoChannel(cs ...<-chan *info.Info) <-chan *info.Info {
 	var wg sync.WaitGroup
-	out := make(chan *Info)
+	out := make(chan *info.Info)
 
 	// Start an output goroutine for each input channel in cs.  output
 	// copies values from c to out until c is closed, then calls wg.Done.
-	output := func(c <-chan *Info) {
+	output := func(c <-chan *info.Info) {
 			for n := range c {
 					out <- n
 			}
@@ -88,13 +89,13 @@ func MergeStringChannel(cs ...<-chan string) <-chan string {
 
 
 // MergeSFOutputMessageChannel merges a list of SecondaryFilterOutputMessage channels 
-func MergeSFOutputMessageChannel(cs ...<-chan *SecondaryFilterOutputMessage) <-chan *SecondaryFilterOutputMessage {
+func MergeSFOutputMessageChannel(cs ...<-chan *filter.SecondaryFilterOutputMessage) <-chan *filter.SecondaryFilterOutputMessage {
 	var wg sync.WaitGroup
-	out := make(chan *SecondaryFilterOutputMessage)
+	out := make(chan *filter.SecondaryFilterOutputMessage)
 
 	// Start an output goroutine for each input channel in cs.  output
 	// copies values from c to out until c is closed, then calls wg.Done.
-	output := func(c <-chan *SecondaryFilterOutputMessage) {
+	output := func(c <-chan *filter.SecondaryFilterOutputMessage) {
 			for n := range c {
 					out <- n
 			}

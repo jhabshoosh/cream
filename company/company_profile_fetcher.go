@@ -1,4 +1,4 @@
-package cream
+package company
 
 import (
 	"fmt"

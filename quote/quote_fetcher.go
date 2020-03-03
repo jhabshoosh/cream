@@ -1,4 +1,4 @@
-package cream
+package quote
 
 import (
 	"fmt"

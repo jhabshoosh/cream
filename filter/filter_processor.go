@@ -1,8 +1,9 @@
-package cream
+package filter
 
 import (
 	"fmt"
 	"github.com/jhabshoo/fmp"
+	"github.com/jhabshoo/cream/info"
 )
 
 // FundamentalFilterProcessor filters companys based on rules that can be applied to Info/Key Metrics
@@ -43,7 +44,7 @@ func (sfom SecondaryFilterOutputMessage) String() string {
 }
 
 // Process consumes from an Info channel and emits passing symbols
-func (ffp *FundamentalFilterProcessor) Process(in <- chan *Info) <- chan string {
+func (ffp *FundamentalFilterProcessor) Process(in <- chan *info.Info) <- chan string {
 	out := make(chan string)
 	go func() {
 		for v := range in {
@@ -83,11 +84,11 @@ func (sfp *SecondaryFilterProcessor) Process(in <- chan *fmp.CompanyQuote) <- ch
 	return out
 }
 
-func multipleFilterRule(ti *Info) bool {
+func multipleFilterRule(ti *info.Info) bool {
 	return ti.EvOverEbitda < 10 && ti.EvOverEbitda > 2
 }
 
-func peRatioFilterRule(ti *Info) bool {
+func peRatioFilterRule(ti *info.Info) bool {
 	return ti.PERatio < 10
 }
 
