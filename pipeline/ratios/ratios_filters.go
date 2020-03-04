@@ -19,3 +19,11 @@ func roaFilter(r Ratio) bool {
 	}
 	return val > .05
 }
+
+func deFilter(r Ratio) bool {
+	val, err := strconv.ParseFloat(r.Data.Debt.DebtEquityRatio, 64)
+	if err != nil {
+		return false
+	}
+	return val <= 4.0 
+}

@@ -16,7 +16,7 @@ func (r Ratio) GetKey() string {
 	return r.Symbol
 }
 
-func (r Ratio) SortVal() int {
+func (r Ratio) SortVal() float64 {
 	return 0
 }
 
@@ -28,7 +28,7 @@ type RatiosProcessor struct {
 
 func (rp *RatiosProcessor) Filter(m pipeline.Message) bool {
 	ratio := m.(Ratio)
-	return roeFilter(ratio) && roaFilter(ratio)
+	return roeFilter(ratio) && roaFilter(ratio) && deFilter(ratio)
 }
 
 func (rp *RatiosProcessor) OutputMessage(im, data pipeline.Message) pipeline.Message {

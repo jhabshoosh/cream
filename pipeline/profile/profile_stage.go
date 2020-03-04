@@ -14,7 +14,7 @@ func (p Profile) GetKey() string {
 	return p.Symbol
 }
 
-func (p Profile) SortVal() int {
+func (p Profile) SortVal() float64 {
 	return 0
 }
 

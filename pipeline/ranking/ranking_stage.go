@@ -18,8 +18,8 @@ func (rs RankingScore) GetKey() string {
 	return rs.Symbol
 }
 
-func (rs RankingScore) SortVal() int {
-	return 0
+func (rs RankingScore) SortVal() float64 {
+	return rs.Score
 }
 
 type scoreMessage struct {
@@ -40,8 +40,8 @@ func (sm scoreMessage) GetKey() string {
 	return sm.symbol
 }
 
-func (sm scoreMessage) SortVal() int {
-	return 0
+func (sm scoreMessage) SortVal() float64 {
+	return 0.0
 }
 
 type RankingProcessor struct {

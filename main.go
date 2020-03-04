@@ -64,7 +64,9 @@ func main() {
 	rankingStage1 := pipeline.Run(rankingProcessor, mergedRatiosChan)
 	rankingStage2 := pipeline.Run(rankingProcessor, mergedRatiosChan)
 	rankingStage3 := pipeline.Run(rankingProcessor, mergedRatiosChan)
-	mergedRankingsChan := pipeline.MergeChannels(rankingStage1, rankingStage2, rankingStage3)
+	rankingStage4 := pipeline.Run(rankingProcessor, mergedRatiosChan)
+	rankingStage5 := pipeline.Run(rankingProcessor, mergedRatiosChan)
+	mergedRankingsChan := pipeline.MergeChannels(rankingStage1, rankingStage2, rankingStage3, rankingStage4, rankingStage5)
 
 
 	var scores pipeline.Envelope
@@ -73,25 +75,21 @@ func main() {
 	}
 	sortedScores := scores.SortByValue()
 
-	sortedScoresTop100 := sortedScores[1:100]
-	scoreChan := pipeline.GenerateChannel(pipeline.Envelope(sortedScoresTop100))
+	scoreChan := pipeline.GenerateChannel(pipeline.Envelope(sortedScores[0:100]))
 
 
 	profileProcessor := new(profile.ProfileProcessor)
-	profilesStage1 := pipeline.Run(profileProcessor, scoreChan)
-	profilesStage2 := pipeline.Run(profileProcessor, scoreChan)
-	profilesStage3 := pipeline.Run(profileProcessor, scoreChan)
-	mergedProfilesChan := pipeline.MergeChannels(profilesStage1,profilesStage2, profilesStage3)
+	profilesStage := pipeline.Run(profileProcessor, scoreChan)
+	mergedProfilesChan := pipeline.MergeChannels(profilesStage)
 
 	var profiles pipeline.Envelope
 	for n := range mergedProfilesChan {
 		profiles = append(profiles, n)
 	}
-	profilesSorted := profiles.Sort()
 
 	var profilesDeduped pipeline.Envelope
 	dedupeMap := make(map[string]bool)
-	for _, v := range profilesSorted {
+	for _, v := range profiles {
 		_, ok := dedupeMap[v.GetKey()]
 		if (!ok) {
 			profilesDeduped = append(profilesDeduped, v)
@@ -99,13 +97,14 @@ func main() {
 		}
 	}
 
-	fmt.Println("========== REPORT - TOP 50 ==========")
-	for _, v := range profilesDeduped[1:51] {
+	fmt.Printf("========== REPORT - TOP %x ==========\n", len(profilesDeduped))
+	for _, v := range profilesDeduped {
 		company := v.(profile.Profile)
-		fmt.Println(fmt.Sprintf("%s | %f", profile.ProfileString(company), scoreMap.Data[v.GetKey()]))
+		fmt.Printf("%s | %f\n", profile.ProfileString(company), scoreMap.Data[v.GetKey()])
 	}
 	fmt.Println("=====================================")
 
 	elapsed := time.Since(start)
-	log.Printf("Processing took %s",  elapsed)
+	total := float64(infoProcessor.GoodCount + infoProcessor.BadCount)
+	log.Printf("Processing %x messages took %s (%x/sec)", total, elapsed, total/elapsed.Seconds())
 }

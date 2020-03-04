@@ -20,7 +20,7 @@ func (q Quote) GetKey() string {
 	return q.Symbol
 }
 
-func (q Quote) SortVal() int {
+func (q Quote) SortVal() float64 {
 	return 0
 }
 

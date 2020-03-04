@@ -17,7 +17,7 @@ type Processor interface {
 
 type Message interface {
 	GetKey() string
-	SortVal() int
+	SortVal() float64
 }
 
 type Envelope []Message
@@ -46,7 +46,7 @@ func (sm StringMessage) GetKey() string {
 	return sm.key
 }
 
-func (sm StringMessage) SortVal() int {
+func (sm StringMessage) SortVal() float64 {
 	return 0
 }
 

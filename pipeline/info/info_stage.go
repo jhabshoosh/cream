@@ -19,7 +19,7 @@ func (i Info) GetKey() string {
 	return i.Symbol
 }
 
-func (i Info) SortVal() int {
+func (i Info) SortVal() float64 {
 	return 0
 }
 
