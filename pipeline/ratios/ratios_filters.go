@@ -4,7 +4,7 @@ import (
 	"strconv"
 )
 
-func roeFilter(r *Ratio) bool {
+func roeFilter(r Ratio) bool {
 	val, err := strconv.ParseFloat(r.Data.ProfitabilityIndicator.ReturnOnEquity, 64) 
 	if (err != nil) {
 		return false
@@ -12,7 +12,7 @@ func roeFilter(r *Ratio) bool {
 	return val > .15
 }
 
-func roaFilter(r *Ratio) bool {
+func roaFilter(r Ratio) bool {
 	val, err := strconv.ParseFloat(r.Data.ProfitabilityIndicator.ReturnOnAssets, 64)
 	if (err != nil) {
 		return false

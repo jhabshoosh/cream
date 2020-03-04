@@ -1,6 +1,9 @@
 package ranking
 
 import (
+	"sync"
+	"github.com/jhabshoo/cream/pipeline"
+	"github.com/jhabshoo/cream/pipeline/quote"
 	"log"
 	"strconv"
 	fmp "github.com/jhabshoo/fmp/client"
@@ -11,21 +14,105 @@ type RankingScore struct {
 	Score float64
 }
 
-func newRangingScore(symbol string, score float64) *RankingScore {
+func (rs RankingScore) GetKey() string {
+	return rs.Symbol
+}
+
+func (rs RankingScore) SortVal() int {
+	return 0
+}
+
+type scoreMessage struct {
+	symbol string
+	cashFlow fmp.CashFlowStatement
+	financials fmp.FinancialStatment
+}
+
+func newScoreMessage(symbol string, cashFlow fmp.CashFlowStatement, financials fmp.FinancialStatment) scoreMessage {
+	sm := new(scoreMessage)
+	sm.symbol = symbol
+	sm.cashFlow = cashFlow
+	sm.financials = financials
+	return *sm
+}
+
+func (sm scoreMessage) GetKey() string {
+	return sm.symbol
+}
+
+func (sm scoreMessage) SortVal() int {
+	return 0
+}
+
+type RankingProcessor struct {
+	GoodCount int
+	BadCount int
+	quoteMap *quote.QuoteMap
+	scoreMap *ScoreMap
+}
+
+type ScoreMap struct {
+	mutex sync.Mutex
+	Data map[string]float64
+}
+
+func NewScoreMap() *ScoreMap {
+	sm := new(ScoreMap)
+	sm.Data = make(map [string]float64)
+	return sm
+}
+
+func NewRankingProcessor(quoteMap *quote.QuoteMap, scoreMap *ScoreMap) *RankingProcessor {
+	rp := new(RankingProcessor)
+	rp.scoreMap = scoreMap
+	rp.quoteMap = quoteMap
+	return rp
+}
+
+func (rp *RankingProcessor) Filter(m pipeline.Message) bool {
+	return true
+}
+
+func (rp *RankingProcessor) OutputMessage(im, data pipeline.Message) pipeline.Message {
+	d := data.(scoreMessage)
+	score := calculateScore(d.financials, d.cashFlow, rp.quoteMap.Data[im.GetKey()])
+	return newRankingScore(im.GetKey(), score)
+}
+
+func (rp *RankingProcessor) GetData(m pipeline.Message) pipeline.Message {
+	cashFlow := getCashFlow(m.GetKey())
+	financials := getFinancials(m.GetKey())
+	return newScoreMessage(m.GetKey(), cashFlow, financials)
+}
+
+func (rp *RankingProcessor) Passed(im, om pipeline.Message) {
+	rs := om.(RankingScore)
+	rp.scoreMap.mutex.Lock()
+	defer rp.scoreMap.mutex.Unlock()
+	rp.scoreMap.Data[om.GetKey()] = rs.Score
+}
+
+func (rp *RankingProcessor) Failed(im, om pipeline.Message) {} 
+
+func (ip *RankingProcessor) LogMessage(m pipeline.Message) {
+	log.Println("RankingProcessor Received: ", m.GetKey())
+}
+
+func newRankingScore(symbol string, score float64) RankingScore {
 	rs := new(RankingScore)
 	rs.Symbol = symbol
 	rs.Score = score
-	return rs
+	return *rs
 }
 
-func calculateScore(financials fmp.FinancialStatment, cashFlow fmp.CashFlowStatement, quote fmp.CompanyQuote) float64 {
+func calculateScore(financials fmp.FinancialStatment, cashFlow fmp.CashFlowStatement, q quote.Quote) float64 {
 	// So (FCF-Int. Exp.)/Market Cap
 	fcf, err := strconv.ParseFloat(cashFlow.FreeCashFlow, 64)
 	intExp, err := strconv.ParseFloat(financials.InterestExpense, 64)
 	if (err != nil) {
 		return -1
 	}
-	return (fcf - intExp) / quote.MarketCap
+	return (fcf - intExp) / q.MarketCap
 }
 
 func getCashFlow(symbol string) fmp.CashFlowStatement {
@@ -48,21 +135,4 @@ func getFinancials(symbol string) fmp.FinancialStatment {
 		return fsr.Financials[0]
 	}
 	return *new(fmp.FinancialStatment)
-}
-
-func Rank(in <- chan string, quoteMap map[string]fmp.CompanyQuote, scoreMap map[string]float64) <- chan *RankingScore {
-	out := make(chan *RankingScore)
-	go func() {
-		for v := range in {
-			cashFlow := getCashFlow(v)
-			financials := getFinancials(v)
-			q := quoteMap[v]
-			score := calculateScore(financials, cashFlow, q)
-			scoreMap[v] = score
-			rs := newRangingScore(v, score)
-			out <- rs
-		}
-		close(out)
-	}()
-	return out
 }
