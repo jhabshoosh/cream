@@ -1,7 +1,7 @@
 package ratios
 
 import (
-	"fmt"
+	"log"
 	fmp "github.com/jhabshoo/fmp/client"
 )
 
@@ -27,7 +27,7 @@ type RatiosStage struct {
 func getRatio(symbol string) *Ratio {
 	frResponse, err := fmp.FetchFinancialRatios(symbol)
 	if (err != nil) {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	return NewRatioFromResponse(frResponse)
 }

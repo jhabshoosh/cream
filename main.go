@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"sort"
 	"github.com/jhabshoo/cream/pipeline/ratios"
+	"github.com/jhabshoo/cream/pipeline/ranking"
 	"github.com/jhabshoo/cream/pipeline/info"
 	"github.com/jhabshoo/cream/pipeline/company"
 	"github.com/jhabshoo/cream/pipeline/quote"
 	"github.com/jhabshoo/cream/utils"
-	"fmt"
 	fmp "github.com/jhabshoo/fmp/client"
 	"time"
 	"log"
@@ -47,12 +49,13 @@ func main() {
 		infoStageChan7, infoStageChan8, infoStageChan9, infoStageChan10)
 
 
+	quoteMap := make(map [string]fmp.CompanyQuote)
 	quoteStage := new(quote.QuoteStage)
-	quoteStageChan1 := quoteStage.Process(mergedTickerChan)
-	quoteStageChan2 := quoteStage.Process(mergedTickerChan)
-	quoteStageChan3 := quoteStage.Process(mergedTickerChan)
-	quoteStageChan4 := quoteStage.Process(mergedTickerChan)
-	quoteStageChan5 := quoteStage.Process(mergedTickerChan)
+	quoteStageChan1 := quoteStage.Process(mergedTickerChan, quoteMap)
+	quoteStageChan2 := quoteStage.Process(mergedTickerChan, quoteMap)
+	quoteStageChan3 := quoteStage.Process(mergedTickerChan, quoteMap)
+	quoteStageChan4 := quoteStage.Process(mergedTickerChan, quoteMap)
+	quoteStageChan5 := quoteStage.Process(mergedTickerChan, quoteMap)
 	mergedQuoteChan := utils.MergeQuoteChannel(quoteStageChan1, quoteStageChan2, quoteStageChan3, quoteStageChan4, quoteStageChan5)
 
 
@@ -65,17 +68,55 @@ func main() {
 	mergedRatiosStageChan := utils.MergeStringChannel(ratiosStageChan1, ratiosStageChan2, ratiosStageChan3, ratiosStageChan4, ratiosStageChan5)
 
 
-	companyProfileStage := new(company.CompanyProfileStage)
-	companyProfileChan1 := companyProfileStage.Process(mergedRatiosStageChan)
-	companyProfileChan2 := companyProfileStage.Process(mergedRatiosStageChan)
-	companyProfileChan3 := companyProfileStage.Process(mergedRatiosStageChan)
-	mergedCompanyProfileChan := utils.MergeCompanyProfileResponseChannel(companyProfileChan1, companyProfileChan2, companyProfileChan3)
+	scoreMap := make(map [string]float64)
+	rankingStageChan1 := ranking.Rank(mergedRatiosStageChan, quoteMap, scoreMap)
+	rankingStageChan2 := ranking.Rank(mergedRatiosStageChan, quoteMap, scoreMap)
+	rankingStageChan3 := ranking.Rank(mergedRatiosStageChan, quoteMap, scoreMap)
+	rankingStageChan4 := ranking.Rank(mergedRatiosStageChan, quoteMap, scoreMap)
+	rankingStageChan5 := ranking.Rank(mergedRatiosStageChan, quoteMap, scoreMap)
+	mergedRankingStageChan := utils.MergeRankingScoreChannel(rankingStageChan1, rankingStageChan2, rankingStageChan3, rankingStageChan4, rankingStageChan5)
 
-	for n := range mergedCompanyProfileChan {
-		fmt.Println(n)
+
+	var scores []ranking.RankingScore
+	for n := range mergedRankingStageChan {
+		scores = append(scores, *n)
 	}
+	sort.SliceStable(scores, func(i, j int) bool {
+		return scores[i].Score > scores[j].Score
+	})
+
+	scores = scores[1:100]
+	scoreChan := utils.GenerateScoreChannel(scores)
+
+
+	companyProfileStage := new(company.CompanyProfileStage)
+	companyProfileChan := companyProfileStage.Process(scoreChan)
+	// mergedCompanyProfileChan := utils.MergeCompanyProfileResponseChannel(companyProfileChan1, companyProfileChan2, companyProfileChan3)
+
+	var profiles []fmp.CompanyProfileResponse
+	for n := range companyProfileChan {
+		profiles = append(profiles, *n)
+	}
+	sort.SliceStable(profiles, func(i, j int) bool {
+		return scoreMap[profiles[i].Symbol] > scoreMap[profiles[j].Symbol]
+	})
+
+	var profilesDeduped []fmp.CompanyProfileResponse
+	dedupeMap := make(map[string]int)
+	for _, v := range profiles {
+		_, ok := dedupeMap[v.Symbol]
+		if (!ok) {
+			profilesDeduped = append(profilesDeduped, v)
+			dedupeMap[v.Symbol] = 1
+		}
+	}
+
+	fmt.Println("========== REPORT - TOP 50 ==========")
+	for _, v := range profilesDeduped[1:51] {
+		fmt.Println(fmt.Sprintf("%s | %f", company.ProfileString(&v), scoreMap[v.Symbol]))
+	}
+	fmt.Println("=====================================")
 
 	elapsed := time.Since(start)
 	log.Printf("Processing took %s",  elapsed)
-	log.Printf("%d symbols passed filters", companyProfileStage.Count)
 }

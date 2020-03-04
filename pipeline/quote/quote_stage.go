@@ -1,8 +1,8 @@
 package quote
 
 import (
+	"log"
 	"github.com/jhabshoo/cream/pipeline/info"
-	"fmt"
 	fmp "github.com/jhabshoo/fmp/client"
 )
 
@@ -13,11 +13,11 @@ type QuoteStage struct {
 }
 
 
-func getQuote(symbol string) *fmp.CompanyQuote {
+func GetQuote(symbol string) *fmp.CompanyQuote {
 	symbolInput := []string {symbol}
 	quoteResponse, err := fmp.FetchCompanyQuote(symbolInput)
 	if (err != nil) {
-		fmt.Println(err)
+		log.Println(err)
 	}
 	if (quoteResponse != nil && len(quoteResponse) > 0) {
 		return &quoteResponse[0]
@@ -26,13 +26,14 @@ func getQuote(symbol string) *fmp.CompanyQuote {
 }
 
 // Process consumes from symbol channel and emits CompanyQuotes
-func (qf *QuoteStage) Process(in <- chan *info.Info) <- chan *fmp.CompanyQuote {
+func (qf *QuoteStage) Process(in <- chan *info.Info, quoteMap map[string]fmp.CompanyQuote) <- chan *fmp.CompanyQuote {
 	out := make(chan *fmp.CompanyQuote)
 	go func() {
 		for v := range in {
-			quote := getQuote(v.Symbol)
+			quote := GetQuote(v.Symbol)
 			if (highLowerFilterRule(quote) && marketCapFilterRule(quote)) {
 				qf.GoodCount++
+				quoteMap[v.Symbol] = *quote
 				out <- quote
 			} else {
 				qf.BadCount++

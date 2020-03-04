@@ -1,6 +1,7 @@
 package utils
 
 import (	
+	"github.com/jhabshoo/cream/pipeline/ranking"
 	fmp "github.com/jhabshoo/fmp/client"
 	"github.com/jhabshoo/cream/pipeline/info"
 	"sync"
@@ -113,12 +114,52 @@ func MergeCompanyProfileResponseChannel(cs ...<-chan *fmp.CompanyProfileResponse
 	return out
 }
 
+// MergeRankingScoreChannel merges a list of RankingScore channels 
+func MergeRankingScoreChannel(cs ...<-chan *ranking.RankingScore) <-chan *ranking.RankingScore {
+	var wg sync.WaitGroup
+	out := make(chan *ranking.RankingScore)
+
+	// Start an output goroutine for each input channel in cs.  output
+	// copies values from c to out until c is closed, then calls wg.Done.
+	output := func(c <-chan *ranking.RankingScore) {
+			for n := range c {
+					out <- n
+			}
+			wg.Done()
+	}
+	wg.Add(len(cs))
+	for _, c := range cs {
+			go output(c)
+	}
+
+	// Start a goroutine to close out once all the output goroutines are
+	// done.  This must start after the wg.Add call.
+	go func() {
+			wg.Wait()
+			close(out)
+	}()
+	return out
+}
+
+
 // GenerateStringChannel emits values of a []strig to a channel
 func GenerateStringChannel(values []string) <-chan string {
 	out := make(chan string)
 	go func() {
 		for _, v := range values {
 			out <- v
+		}
+		close(out)
+	}()
+	return out
+}
+
+// GenerateScoreChannel emits values of a []RankingScore to a channel
+func GenerateScoreChannel(values []ranking.RankingScore) <-chan *ranking.RankingScore {
+	out := make(chan *ranking.RankingScore)
+	go func() {
+		for _, v := range values {
+			out <- &v
 		}
 		close(out)
 	}()
