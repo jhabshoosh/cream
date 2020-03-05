@@ -3,12 +3,14 @@ module github.com/jhabshoo/cream
 go 1.14
 
 require (
+	github.com/azer/logger v1.0.0 // indirect
+	github.com/azer/yolo v0.0.0-20180819171155-df2a2bdacdd0 // indirect
 	github.com/cosiner/argv v0.0.1 // indirect
 	github.com/go-delve/delve v1.4.0 // indirect
-	github.com/jhabshoo/fmp v0.0.0-20200303060020-f610cb321134
+	github.com/jhabshoo/fmp v0.0.0-20200305045500-193c1a5755bc
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
-	github.com/markcheno/go-quote v0.0.0-20191213010133-318ed70f5b44
-	github.com/markcheno/go-talib v0.0.0-20190307022042-cd53a9264d70
+	github.com/markcheno/go-quote v0.0.0-20191213010133-318ed70f5b44 // indirect
+	github.com/markcheno/go-talib v0.0.0-20190307022042-cd53a9264d70 // indirect
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/peterh/liner v1.2.0 // indirect
