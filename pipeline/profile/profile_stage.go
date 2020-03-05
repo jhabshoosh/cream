@@ -1,11 +1,11 @@
 package profile
 
 import (
-	"github.com/jhabshoo/cream/pipeline/ranking"
-	"github.com/jhabshoo/cream/pipeline"
-	"log"
 	"fmt"
+	"github.com/jhabshoo/cream/pipeline"
+	"github.com/jhabshoo/cream/pipeline/ranking"
 	fmp "github.com/jhabshoo/fmp/client"
+	"log"
 )
 
 type Profile fmp.CompanyProfileResponse
@@ -27,7 +27,7 @@ func (pp ProfileProcessor) OutputMessage(im, data pipeline.Message) pipeline.Mes
 }
 
 func (pp ProfileProcessor) GetData(m pipeline.Message) pipeline.Message {
-	if (m == nil) {
+	if m == nil {
 		return nil
 	}
 	score := m.(ranking.RankingScore)
@@ -45,14 +45,14 @@ func (pp ProfileProcessor) Passed(im, om pipeline.Message) {
 func (pp ProfileProcessor) Failed(im, om pipeline.Message) {}
 
 func (ip *ProfileProcessor) LogMessage(m pipeline.Message) {
-	if (m != nil) {
+	if m != nil {
 		log.Println("ProfileProcessor Received:", m.GetKey())
 	}
 }
 
 func getCompanyProfile(symbol string) Profile {
 	cpr, err := fmp.FetchCompanyProfile(symbol)
-	if (err != nil) {
+	if err != nil {
 		log.Println(err)
 	}
 	return Profile(cpr)

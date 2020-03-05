@@ -1,17 +1,17 @@
 package main
 
 import (
-	"github.com/jhabshoo/cream/pipeline"
 	"fmt"
-	"github.com/jhabshoo/cream/pipeline/ratios"
-	"github.com/jhabshoo/cream/pipeline/ranking"
+	"github.com/jhabshoo/cream/pipeline"
 	"github.com/jhabshoo/cream/pipeline/info"
 	"github.com/jhabshoo/cream/pipeline/profile"
 	"github.com/jhabshoo/cream/pipeline/quote"
+	"github.com/jhabshoo/cream/pipeline/ranking"
+	"github.com/jhabshoo/cream/pipeline/ratios"
 	fmp "github.com/jhabshoo/fmp/client"
-	"time"
 	"log"
 	s "strings"
+	"time"
 )
 
 func main() {
@@ -19,12 +19,12 @@ func main() {
 
 	companies := fmp.GetSymbolsList()
 	var tickerEnvelope pipeline.Envelope
-	for _,v := range companies {
-		if (!s.Contains(v.Symbol, ".")) {
+	for _, v := range companies {
+		if !s.Contains(v.Symbol, ".") {
 			tickerEnvelope = append(tickerEnvelope, pipeline.GetStringMessage(v.Symbol))
 		}
 	}
-	
+
 	tickerChan := pipeline.GenerateChannel(tickerEnvelope)
 
 	infoProcessor := new(info.InfoProcessor)
@@ -38,8 +38,7 @@ func main() {
 	infoStage8 := pipeline.Run(infoProcessor, tickerChan)
 	infoStage9 := pipeline.Run(infoProcessor, tickerChan)
 	infoStage10 := pipeline.Run(infoProcessor, tickerChan)
-	mergedInfoChan := pipeline.MergeChannels(infoStage1, infoStage2,infoStage3,infoStage4,infoStage5,infoStage6,infoStage7,infoStage8,infoStage9,infoStage10,)
-
+	mergedInfoChan := pipeline.MergeChannels(infoStage1, infoStage2, infoStage3, infoStage4, infoStage5, infoStage6, infoStage7, infoStage8, infoStage9, infoStage10)
 
 	quoteMap := quote.NewQuoteMap()
 	quoteProcessor := quote.NewQuoteProcessor(quoteMap)
@@ -49,7 +48,6 @@ func main() {
 	quoteStage4 := pipeline.Run(quoteProcessor, mergedInfoChan)
 	quoteStage5 := pipeline.Run(quoteProcessor, mergedInfoChan)
 	mergedQuoteChan := pipeline.MergeChannels(quoteStage1, quoteStage2, quoteStage3, quoteStage4, quoteStage5)
-
 
 	ratiosProcessor := new(ratios.RatiosProcessor)
 	ratiosStage1 := pipeline.Run(ratiosProcessor, mergedQuoteChan)
@@ -68,7 +66,6 @@ func main() {
 	rankingStage5 := pipeline.Run(rankingProcessor, mergedRatiosChan)
 	mergedRankingsChan := pipeline.MergeChannels(rankingStage1, rankingStage2, rankingStage3, rankingStage4, rankingStage5)
 
-
 	var scores pipeline.Envelope
 	for n := range mergedRankingsChan {
 		scores = append(scores, n)
@@ -76,7 +73,6 @@ func main() {
 	sortedScores := scores.SortByValue()
 
 	scoreChan := pipeline.GenerateChannel(pipeline.Envelope(sortedScores[0:100]))
-
 
 	profileProcessor := new(profile.ProfileProcessor)
 	profilesStage := pipeline.Run(profileProcessor, scoreChan)
@@ -91,13 +87,21 @@ func main() {
 	dedupeMap := make(map[string]bool)
 	for _, v := range profiles {
 		_, ok := dedupeMap[v.GetKey()]
-		if (!ok) {
+		if !ok {
 			profilesDeduped = append(profilesDeduped, v)
 			dedupeMap[v.GetKey()] = true
 		}
 	}
 
 	fmt.Printf("========== REPORT - TOP %x ==========\n", len(profilesDeduped))
+	fmt.Println("------STATS-------- OPS STATS --------------")
+	fmt.Printf("InfoStage Good: %x Bad %x", infoProcessor.GoodCount, infoProcessor.BadCount)
+	fmt.Printf("QuoteStage Good: %x Bad %x", quoteProcessor.GoodCount, quoteProcessor.BadCount)
+	fmt.Printf("RatiosStage Good: %x Bad %x", ratiosProcessor.GoodCount, ratiosProcessor.BadCount)
+	fmt.Printf("RankingStage Count %x", rankingProcessor.Count)
+	fmt.Printf("ProfileStage Count %x", profileProcessor.Count)
+	fmt.Println("---------------------------------------")
+
 	for _, v := range profilesDeduped {
 		company := v.(profile.Profile)
 		fmt.Printf("%s | %f\n", profile.ProfileString(company), scoreMap.Data[v.GetKey()])

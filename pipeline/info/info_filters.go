@@ -1,7 +1,5 @@
 package info
 
-
-
 func multipleFilterRule(i Info) bool {
 	return i.EvOverEbitda < 10 && i.EvOverEbitda > 2
 }

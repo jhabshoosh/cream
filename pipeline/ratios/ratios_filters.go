@@ -5,8 +5,8 @@ import (
 )
 
 func roeFilter(r Ratio) bool {
-	val, err := strconv.ParseFloat(r.Data.ProfitabilityIndicator.ReturnOnEquity, 64) 
-	if (err != nil) {
+	val, err := strconv.ParseFloat(r.Data.ProfitabilityIndicator.ReturnOnEquity, 64)
+	if err != nil {
 		return false
 	}
 	return val > .15
@@ -14,7 +14,7 @@ func roeFilter(r Ratio) bool {
 
 func roaFilter(r Ratio) bool {
 	val, err := strconv.ParseFloat(r.Data.ProfitabilityIndicator.ReturnOnAssets, 64)
-	if (err != nil) {
+	if err != nil {
 		return false
 	}
 	return val > .05
@@ -25,5 +25,5 @@ func deFilter(r Ratio) bool {
 	if err != nil {
 		return false
 	}
-	return val <= 4.0 
+	return val <= 4.0
 }

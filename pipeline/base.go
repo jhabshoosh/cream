@@ -56,14 +56,14 @@ func GetStringMessage(str string) StringMessage {
 	return *sm
 }
 
-func Run(p Processor, in <- chan Message) chan Message {
+func Run(p Processor, in <-chan Message) chan Message {
 	out := make(chan Message)
 	go func() {
 		for im := range in {
 			p.LogMessage(im)
 			data := p.GetData(im)
 			om := p.OutputMessage(im, data)
-			if (p.Filter(data)) {
+			if p.Filter(data) {
 				p.Passed(im, om)
 				if om != nil {
 					out <- om
@@ -78,7 +78,6 @@ func Run(p Processor, in <- chan Message) chan Message {
 	}()
 	return out
 }
-
 
 func GenerateChannel(e Envelope) <-chan Message {
 	out := make(chan Message)
@@ -98,21 +97,21 @@ func MergeChannels(cs ...<-chan Message) <-chan Message {
 	// Start an output goroutine for each input channel in cs.  output
 	// copies values from c to out until c is closed, then calls wg.Done.
 	output := func(c <-chan Message) {
-			for n := range c {
-					out <- n
-			}
-			wg.Done()
+		for n := range c {
+			out <- n
+		}
+		wg.Done()
 	}
 	wg.Add(len(cs))
 	for _, c := range cs {
-			go output(c)
+		go output(c)
 	}
 
 	// Start a goroutine to close out once all the output goroutines are
 	// done.  This must start after the wg.Add call.
 	go func() {
-			wg.Wait()
-			close(out)
+		wg.Wait()
+		close(out)
 	}()
 	return out
 }

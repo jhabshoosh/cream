@@ -1,17 +1,17 @@
 package ranking
 
 import (
-	"sync"
 	"github.com/jhabshoo/cream/pipeline"
 	"github.com/jhabshoo/cream/pipeline/quote"
+	fmp "github.com/jhabshoo/fmp/client"
 	"log"
 	"strconv"
-	fmp "github.com/jhabshoo/fmp/client"
+	"sync"
 )
 
 type RankingScore struct {
 	Symbol string
-	Score float64
+	Score  float64
 }
 
 func (rs RankingScore) GetKey() string {
@@ -23,8 +23,8 @@ func (rs RankingScore) SortVal() float64 {
 }
 
 type scoreMessage struct {
-	symbol string
-	cashFlow fmp.CashFlowStatement
+	symbol     string
+	cashFlow   fmp.CashFlowStatement
 	financials fmp.FinancialStatment
 }
 
@@ -45,20 +45,19 @@ func (sm scoreMessage) SortVal() float64 {
 }
 
 type RankingProcessor struct {
-	GoodCount int
-	BadCount int
+	Count    int
 	quoteMap *quote.QuoteMap
 	scoreMap *ScoreMap
 }
 
 type ScoreMap struct {
 	mutex sync.Mutex
-	Data map[string]float64
+	Data  map[string]float64
 }
 
 func NewScoreMap() *ScoreMap {
 	sm := new(ScoreMap)
-	sm.Data = make(map [string]float64)
+	sm.Data = make(map[string]float64)
 	return sm
 }
 
@@ -86,13 +85,14 @@ func (rp *RankingProcessor) GetData(m pipeline.Message) pipeline.Message {
 }
 
 func (rp *RankingProcessor) Passed(im, om pipeline.Message) {
+	rp.Count++
 	rs := om.(RankingScore)
 	rp.scoreMap.mutex.Lock()
 	defer rp.scoreMap.mutex.Unlock()
 	rp.scoreMap.Data[om.GetKey()] = rs.Score
 }
 
-func (rp *RankingProcessor) Failed(im, om pipeline.Message) {} 
+func (rp *RankingProcessor) Failed(im, om pipeline.Message) {}
 
 func (ip *RankingProcessor) LogMessage(m pipeline.Message) {
 	log.Println("RankingProcessor Received: ", m.GetKey())
@@ -109,7 +109,7 @@ func calculateScore(financials fmp.FinancialStatment, cashFlow fmp.CashFlowState
 	// So (FCF-Int. Exp.)/Market Cap
 	fcf, err := strconv.ParseFloat(cashFlow.FreeCashFlow, 64)
 	intExp, err := strconv.ParseFloat(financials.InterestExpense, 64)
-	if (err != nil) {
+	if err != nil {
 		return -1
 	}
 	return (fcf - intExp) / q.MarketCap
@@ -117,10 +117,10 @@ func calculateScore(financials fmp.FinancialStatment, cashFlow fmp.CashFlowState
 
 func getCashFlow(symbol string) fmp.CashFlowStatement {
 	fsr, err := fmp.FetchCashFlowStatements(symbol)
-	if (err != nil) {
+	if err != nil {
 		log.Println(err)
 	}
-	if (len(fsr.Financials) > 0) {
+	if len(fsr.Financials) > 0 {
 		return fsr.Financials[0]
 	}
 	return *new(fmp.CashFlowStatement)
@@ -128,10 +128,10 @@ func getCashFlow(symbol string) fmp.CashFlowStatement {
 
 func getFinancials(symbol string) fmp.FinancialStatment {
 	fsr, err := fmp.FetchFinancialStatements(symbol)
-	if (err != nil) {
+	if err != nil {
 		log.Println(err)
 	}
-	if (len(fsr.Financials) > 0) {
+	if len(fsr.Financials) > 0 {
 		return fsr.Financials[0]
 	}
 	return *new(fmp.FinancialStatment)

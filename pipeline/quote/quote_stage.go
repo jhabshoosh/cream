@@ -1,20 +1,20 @@
 package quote
 
 import (
-	"sync"
-	"log"
 	"github.com/jhabshoo/cream/pipeline"
 	"github.com/jhabshoo/cream/pipeline/info"
 	fmp "github.com/jhabshoo/fmp/client"
+	"log"
+	"sync"
 )
 
 // QuoteStage fetches from FMP for symbols
 type QuoteStage struct {
 	GoodCount int
-	BadCount int
+	BadCount  int
 }
 
-type Quote fmp.CompanyQuote 
+type Quote fmp.CompanyQuote
 
 func (q Quote) GetKey() string {
 	return q.Symbol
@@ -26,18 +26,18 @@ func (q Quote) SortVal() float64 {
 
 type QuoteProcessor struct {
 	GoodCount int
-	BadCount int
-	quoteMap *QuoteMap
+	BadCount  int
+	quoteMap  *QuoteMap
 }
 
 type QuoteMap struct {
 	mutex sync.Mutex
-	Data map[string]Quote
+	Data  map[string]Quote
 }
 
 func NewQuoteMap() *QuoteMap {
 	qm := new(QuoteMap)
-	qm.Data = make(map [string]Quote)
+	qm.Data = make(map[string]Quote)
 	return qm
 }
 
@@ -83,13 +83,13 @@ func (ip *QuoteProcessor) LogMessage(m pipeline.Message) {
 }
 
 func getQuote(symbol string) (Quote, error) {
-	symbolInput := []string {symbol}
+	symbolInput := []string{symbol}
 	quoteResponse, err := fmp.FetchCompanyQuote(symbolInput)
 	var q Quote
-	if (err != nil) {
+	if err != nil {
 		return q, err
 	}
-	if (quoteResponse != nil && len(quoteResponse) > 0) {
+	if quoteResponse != nil && len(quoteResponse) > 0 {
 		q = Quote(quoteResponse[0])
 		return q, nil
 	}
