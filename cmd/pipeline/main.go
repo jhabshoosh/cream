@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
-	fmp "github.com/jhabshoo/fmp/pkg/client"
-	"github.com/jhabshoo/cream/internal/base"
-	"github.com/jhabshoo/cream/internal/info"
-	"github.com/jhabshoo/cream/internal/quote"
-	"github.com/jhabshoo/cream/internal/profile"
-	"github.com/jhabshoo/cream/internal/ratios"
-	"github.com/jhabshoo/cream/internal/ranking"
 	"log"
 	s "strings"
 	"time"
+
+	"github.com/jhabshoo/cream/internal/base"
+	"github.com/jhabshoo/cream/internal/info"
+	"github.com/jhabshoo/cream/internal/profile"
+	"github.com/jhabshoo/cream/internal/quote"
+	"github.com/jhabshoo/cream/internal/ranking"
+	"github.com/jhabshoo/cream/internal/ratios"
+	fmp "github.com/jhabshoo/fmp/pkg/client"
 )
 
 func main() {
@@ -28,43 +29,22 @@ func main() {
 	tickerChan := base.GenerateChannel(tickerEnvelope)
 
 	infoProcessor := new(info.InfoProcessor)
-	infoStage1 := base.Run(infoProcessor, tickerChan)
-	infoStage2 := base.Run(infoProcessor, tickerChan)
-	infoStage3 := base.Run(infoProcessor, tickerChan)
-	infoStage4 := base.Run(infoProcessor, tickerChan)
-	infoStage5 := base.Run(infoProcessor, tickerChan)
-	infoStage6 := base.Run(infoProcessor, tickerChan)
-	infoStage7 := base.Run(infoProcessor, tickerChan)
-	infoStage8 := base.Run(infoProcessor, tickerChan)
-	infoStage9 := base.Run(infoProcessor, tickerChan)
-	infoStage10 := base.Run(infoProcessor, tickerChan)
-	mergedInfoChan := base.MergeChannels(infoStage1, infoStage2, infoStage3, infoStage4, infoStage5, infoStage6, infoStage7, infoStage8, infoStage9, infoStage10)
+	infoStage := base.Run(infoProcessor, tickerChan, 10)
+	mergedInfoChan := base.MergeChannels(infoStage)
 
 	quoteMap := quote.NewQuoteMap()
 	quoteProcessor := quote.NewQuoteProcessor(quoteMap)
-	quoteStage1 := base.Run(quoteProcessor, mergedInfoChan)
-	quoteStage2 := base.Run(quoteProcessor, mergedInfoChan)
-	quoteStage3 := base.Run(quoteProcessor, mergedInfoChan)
-	quoteStage4 := base.Run(quoteProcessor, mergedInfoChan)
-	quoteStage5 := base.Run(quoteProcessor, mergedInfoChan)
-	mergedQuoteChan := base.MergeChannels(quoteStage1, quoteStage2, quoteStage3, quoteStage4, quoteStage5)
+	quoteStage := base.Run(quoteProcessor, mergedInfoChan, 10)
+	mergedQuoteChan := base.MergeChannels(quoteStage)
 
 	ratiosProcessor := new(ratios.RatiosProcessor)
-	ratiosStage1 := base.Run(ratiosProcessor, mergedQuoteChan)
-	ratiosStage2 := base.Run(ratiosProcessor, mergedQuoteChan)
-	ratiosStage3 := base.Run(ratiosProcessor, mergedQuoteChan)
-	ratiosStage4 := base.Run(ratiosProcessor, mergedQuoteChan)
-	ratiosStage5 := base.Run(ratiosProcessor, mergedQuoteChan)
-	mergedRatiosChan := base.MergeChannels(ratiosStage1, ratiosStage2, ratiosStage3, ratiosStage4, ratiosStage5)
+	ratiosStage := base.Run(ratiosProcessor, mergedQuoteChan, 10)
+	mergedRatiosChan := base.MergeChannels(ratiosStage)
 
 	scoreMap := ranking.NewScoreMap()
 	rankingProcessor := ranking.NewRankingProcessor(quoteMap, scoreMap)
-	rankingStage1 := base.Run(rankingProcessor, mergedRatiosChan)
-	rankingStage2 := base.Run(rankingProcessor, mergedRatiosChan)
-	rankingStage3 := base.Run(rankingProcessor, mergedRatiosChan)
-	rankingStage4 := base.Run(rankingProcessor, mergedRatiosChan)
-	rankingStage5 := base.Run(rankingProcessor, mergedRatiosChan)
-	mergedRankingsChan := base.MergeChannels(rankingStage1, rankingStage2, rankingStage3, rankingStage4, rankingStage5)
+	rankingStage := base.Run(rankingProcessor, mergedRatiosChan, 5)
+	mergedRankingsChan := base.MergeChannels(rankingStage)
 
 	var scores base.Envelope
 	for n := range mergedRankingsChan {
@@ -75,13 +55,13 @@ func main() {
 	scoreChan := base.GenerateChannel(base.Envelope(sortedScores[0:100]))
 
 	profileProcessor := new(profile.ProfileProcessor)
-	profilesStage := base.Run(profileProcessor, scoreChan)
+	profilesStage := base.Run(profileProcessor, scoreChan, 1)
 	mergedProfilesChan := base.MergeChannels(profilesStage)
-	
+
 	var profiles base.Envelope
 	for n := range mergedProfilesChan {
 		seconds := time.Since(start).Seconds()
-		totalSoFar := (profileProcessor.Count + infoProcessor.BadCount + quoteProcessor.BadCount + ratiosProcessor.BadCount )
+		totalSoFar := (profileProcessor.Count + infoProcessor.BadCount + quoteProcessor.BadCount + ratiosProcessor.BadCount)
 		log.Printf("Processed %d messages.  %g messages per sec\n", totalSoFar, float64(totalSoFar)/seconds)
 		profiles = append(profiles, n)
 	}

@@ -56,27 +56,31 @@ func GetStringMessage(str string) StringMessage {
 	return *sm
 }
 
-func Run(p Processor, in <-chan Message) chan Message {
-	out := make(chan Message)
-	go func() {
-		for im := range in {
-			// p.LogMessage(im)
-			data := p.GetData(im)
-			om := p.OutputMessage(im, data)
-			if p.Filter(data) {
-				p.Passed(im, om)
-				if om != nil {
-					out <- om
+func Run(p Processor, in <-chan Message, workers int) []chan Message {
+	var outputChannels []chan Message
+	for i := 0; i < workers; i++ {
+		out := make(chan Message)
+		go func() {
+			for im := range in {
+				p.LogMessage(im)
+				data := p.GetData(im)
+				om := p.OutputMessage(im, data)
+				if p.Filter(data) {
+					p.Passed(im, om)
+					if om != nil {
+						out <- om
+					} else {
+						log.Println("Nil message filtered out of pipeline")
+					}
 				} else {
-					log.Println("Nil message filtered out of pipeline")
+					p.Failed(im, om)
 				}
-			} else {
-				p.Failed(im, om)
 			}
-		}
-		close(out)
-	}()
-	return out
+			close(out)
+		}()
+		outputChannels = append(outputChannels, out)
+	}
+	return outputChannels
 }
 
 func GenerateChannel(e Envelope) <-chan Message {
@@ -90,7 +94,7 @@ func GenerateChannel(e Envelope) <-chan Message {
 	return out
 }
 
-func MergeChannels(cs ...<-chan Message) <-chan Message {
+func MergeChannels(cs []chan Message) <-chan Message {
 	var wg sync.WaitGroup
 	out := make(chan Message)
 
