@@ -6,13 +6,13 @@ import (
 	s "strings"
 	"time"
 
-	"github.com/jhabshoo/cream/internal/base"
-	"github.com/jhabshoo/cream/internal/info"
-	"github.com/jhabshoo/cream/internal/profile"
-	"github.com/jhabshoo/cream/internal/quote"
-	"github.com/jhabshoo/cream/internal/ranking"
-	"github.com/jhabshoo/cream/internal/ratios"
-	fmp "github.com/jhabshoo/fmp/pkg/client"
+	"github.com/jhabshoosh/cream/internal/base"
+	"github.com/jhabshoosh/cream/internal/info"
+	"github.com/jhabshoosh/cream/internal/profile"
+	"github.com/jhabshoosh/cream/internal/quote"
+	"github.com/jhabshoosh/cream/internal/ranking"
+	"github.com/jhabshoosh/cream/internal/ratios"
+	fmp "github.com/jhabshoosh/fmp/pkg/client"
 )
 
 func main() {

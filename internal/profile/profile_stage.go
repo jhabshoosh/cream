@@ -1,11 +1,12 @@
 package profile
 
 import (
-	"github.com/jhabshoo/cream/internal/ranking"
-	"github.com/jhabshoo/cream/internal/base"
 	"fmt"
-	fmp "github.com/jhabshoo/fmp/pkg/client"
 	"log"
+
+	"github.com/jhabshoosh/cream/internal/base"
+	"github.com/jhabshoosh/cream/internal/ranking"
+	fmp "github.com/jhabshoosh/fmp/pkg/client"
 )
 
 type Profile fmp.CompanyProfileResponse

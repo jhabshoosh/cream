@@ -1,9 +1,10 @@
 package ratios
 
 import (
-	"github.com/jhabshoo/cream/internal/base"
-	fmp "github.com/jhabshoo/fmp/pkg/client"
 	"log"
+
+	"github.com/jhabshoosh/cream/internal/base"
+	fmp "github.com/jhabshoosh/fmp/pkg/client"
 )
 
 type Ratio struct {

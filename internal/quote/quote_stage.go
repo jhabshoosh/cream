@@ -1,11 +1,12 @@
 package quote
 
 import (
-	"github.com/jhabshoo/cream/internal/base"
-	"github.com/jhabshoo/cream/internal/info"
-	fmp "github.com/jhabshoo/fmp/pkg/client"
 	"log"
 	"sync"
+
+	"github.com/jhabshoosh/cream/internal/base"
+	"github.com/jhabshoosh/cream/internal/info"
+	fmp "github.com/jhabshoosh/fmp/pkg/client"
 )
 
 // QuoteStage fetches from FMP for symbols

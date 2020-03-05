@@ -1,12 +1,13 @@
 package ranking
 
 import (
-	"github.com/jhabshoo/cream/internal/base"
-	"github.com/jhabshoo/cream/internal/quote"
-	fmp "github.com/jhabshoo/fmp/pkg/client"
 	"log"
 	"strconv"
 	"sync"
+
+	"github.com/jhabshoosh/cream/internal/base"
+	"github.com/jhabshoosh/cream/internal/quote"
+	fmp "github.com/jhabshoosh/fmp/pkg/client"
 )
 
 type RankingScore struct {
