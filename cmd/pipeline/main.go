@@ -2,116 +2,110 @@ package main
 
 import (
 	"fmt"
-	fmp "github.com/jhabshoo/fmp/pkg/client"
-	"github.com/jhabshoo/cream/internal/base"
-	"github.com/jhabshoo/cream/internal/info"
-	"github.com/jhabshoo/cream/internal/quote"
-	"github.com/jhabshoo/cream/internal/profile"
-	"github.com/jhabshoo/cream/internal/ratios"
-	"github.com/jhabshoo/cream/internal/ranking"
 	"log"
-	s "strings"
 	"time"
+
+	av "github.com/jhabshoo/cream/internal/av"
+	"github.com/jhabshoo/cream/internal/base"
+	company_overview "github.com/jhabshoo/cream/internal/company_overview"
+	// fmp "github.com/jhabshoo/fmp/pkg/client"
 )
 
 func main() {
 	start := time.Now()
 
-	companies := fmp.GetSymbolsList()
+	companies := av.GetSymbolsList()
 	var tickerEnvelope base.Envelope
 	for _, v := range companies {
-		if !s.Contains(v.Symbol, ".") {
-			tickerEnvelope = append(tickerEnvelope, base.GetStringMessage(v.Symbol))
-		}
+		// if !s.Contains(v.Symbol, ".") {
+		// 	tickerEnvelope = append(tickerEnvelope, base.GetStringMessage(v.Symbol))
+		// }
+		tickerEnvelope = append(tickerEnvelope, base.GetStringMessage(v))
 	}
 
 	tickerChan := base.GenerateChannel(tickerEnvelope)
 
-	infoProcessor := new(info.InfoProcessor)
-	infoStage1 := base.Run(infoProcessor, tickerChan)
-	infoStage2 := base.Run(infoProcessor, tickerChan)
-	infoStage3 := base.Run(infoProcessor, tickerChan)
-	infoStage4 := base.Run(infoProcessor, tickerChan)
-	infoStage5 := base.Run(infoProcessor, tickerChan)
-	infoStage6 := base.Run(infoProcessor, tickerChan)
-	infoStage7 := base.Run(infoProcessor, tickerChan)
-	infoStage8 := base.Run(infoProcessor, tickerChan)
-	infoStage9 := base.Run(infoProcessor, tickerChan)
-	infoStage10 := base.Run(infoProcessor, tickerChan)
-	mergedInfoChan := base.MergeChannels(infoStage1, infoStage2, infoStage3, infoStage4, infoStage5, infoStage6, infoStage7, infoStage8, infoStage9, infoStage10)
+	companyOverviewProcessor := new(company_overview.CompanyOverviewProcessor)
+	companyOverviewStage1 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage2 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage3 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage4 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage5 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage6 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage7 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage8 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage9 := base.Run(companyOverviewProcessor, tickerChan)
+	companyOverviewStage10 := base.Run(companyOverviewProcessor, tickerChan)
+	mergedCompanyOverviewChan := base.MergeChannels(companyOverviewStage1, companyOverviewStage2, companyOverviewStage3, companyOverviewStage4, companyOverviewStage5, companyOverviewStage6, companyOverviewStage7, companyOverviewStage8, companyOverviewStage9, companyOverviewStage10)
 
-	quoteMap := quote.NewQuoteMap()
-	quoteProcessor := quote.NewQuoteProcessor(quoteMap)
-	quoteStage1 := base.Run(quoteProcessor, mergedInfoChan)
-	quoteStage2 := base.Run(quoteProcessor, mergedInfoChan)
-	quoteStage3 := base.Run(quoteProcessor, mergedInfoChan)
-	quoteStage4 := base.Run(quoteProcessor, mergedInfoChan)
-	quoteStage5 := base.Run(quoteProcessor, mergedInfoChan)
-	mergedQuoteChan := base.MergeChannels(quoteStage1, quoteStage2, quoteStage3, quoteStage4, quoteStage5)
-
-	ratiosProcessor := new(ratios.RatiosProcessor)
-	ratiosStage1 := base.Run(ratiosProcessor, mergedQuoteChan)
-	ratiosStage2 := base.Run(ratiosProcessor, mergedQuoteChan)
-	ratiosStage3 := base.Run(ratiosProcessor, mergedQuoteChan)
-	ratiosStage4 := base.Run(ratiosProcessor, mergedQuoteChan)
-	ratiosStage5 := base.Run(ratiosProcessor, mergedQuoteChan)
-	mergedRatiosChan := base.MergeChannels(ratiosStage1, ratiosStage2, ratiosStage3, ratiosStage4, ratiosStage5)
-
-	scoreMap := ranking.NewScoreMap()
-	rankingProcessor := ranking.NewRankingProcessor(quoteMap, scoreMap)
-	rankingStage1 := base.Run(rankingProcessor, mergedRatiosChan)
-	rankingStage2 := base.Run(rankingProcessor, mergedRatiosChan)
-	rankingStage3 := base.Run(rankingProcessor, mergedRatiosChan)
-	rankingStage4 := base.Run(rankingProcessor, mergedRatiosChan)
-	rankingStage5 := base.Run(rankingProcessor, mergedRatiosChan)
-	mergedRankingsChan := base.MergeChannels(rankingStage1, rankingStage2, rankingStage3, rankingStage4, rankingStage5)
-
-	var scores base.Envelope
-	for n := range mergedRankingsChan {
-		scores = append(scores, n)
+	for n := range mergedCompanyOverviewChan {
+		fmt.Println(n)
 	}
-	sortedScores := scores.SortByValue()
+	// debtEquityProcessor := new(debt_equity.DebtEquityProcessor)
+	// debtEquityStage1 := base.Run(debtEquityProcessor, mergedCompanyOverviewChan)
+	// debtEquityStage2 := base.Run(debtEquityProcessor, mergedCompanyOverviewChan)
+	// debtEquityStage3 := base.Run(debtEquityProcessor, mergedCompanyOverviewChan)
+	// debtEquityStage4 := base.Run(debtEquityProcessor, mergedCompanyOverviewChan)
+	// debtEquityStage5 := base.Run(debtEquityProcessor, mergedCompanyOverviewChan)
+	// mergedDebtEquityChan := base.MergeChannels(debtEquityStage1, debtEquityStage2, debtEquityStage3, debtEquityStage4, debtEquityStage5)
 
-	scoreChan := base.GenerateChannel(base.Envelope(sortedScores[0:100]))
+	// scoreMap := score.NewScoreMap()
+	// rankingProcessor := score.NewRankingProcessor(scoreMap)
+	// rankingStage1 := base.Run(rankingProcessor, mergedDebtEquityChan)
+	// rankingStage2 := base.Run(rankingProcessor, mergedDebtEquityChan)
+	// rankingStage3 := base.Run(rankingProcessor, mergedDebtEquityChan)
+	// rankingStage4 := base.Run(rankingProcessor, mergedDebtEquityChan)
+	// rankingStage5 := base.Run(rankingProcessor, mergedDebtEquityChan)
+	// mergedRankingsChan := base.MergeChannels(rankingStage1, rankingStage2, rankingStage3, rankingStage4, rankingStage5)
 
-	profileProcessor := new(profile.ProfileProcessor)
-	profilesStage := base.Run(profileProcessor, scoreChan)
-	mergedProfilesChan := base.MergeChannels(profilesStage)
-	
-	var profiles base.Envelope
-	for n := range mergedProfilesChan {
-		seconds := time.Since(start).Seconds()
-		totalSoFar := (profileProcessor.Count + infoProcessor.BadCount + quoteProcessor.BadCount + ratiosProcessor.BadCount )
-		log.Printf("Processed %d messages.  %g messages per sec\n", totalSoFar, float64(totalSoFar)/seconds)
-		profiles = append(profiles, n)
-	}
+	// var scores base.Envelope
+	// for n := range mergedRankingsChan {
+	// 	scores = append(scores, n)
+	// }
+	// sortedScores := scores.SortByValue()
 
-	var profilesDeduped base.Envelope
-	dedupeMap := make(map[string]bool)
-	for _, v := range profiles {
-		_, ok := dedupeMap[v.GetKey()]
-		if !ok {
-			profilesDeduped = append(profilesDeduped, v)
-			dedupeMap[v.GetKey()] = true
-		}
-	}
+	// // scoreChan := base.GenerateChannel(base.Envelope(sortedScores[0:100]))
 
-	fmt.Printf("========== REPORT - TOP %v ==========\n", len(profilesDeduped))
+	// for s := range sortedScores {
+	// 	fmt.Println(sortedScores[s])
+	// }
+
+	// profileProcessor := new(profile.ProfileProcessor)
+	// profilesStage := base.Run(profileProcessor, scoreChan)
+	// mergedProfilesChan := base.MergeChannels(profilesStage)
+
+	// var profiles base.Envelope
+	// for n := range mergedProfilesChan {
+	// 	seconds := time.Since(start).Seconds()
+	// 	totalSoFar := (profileProcessor.Count + companyOverviewProcessor.BadCount + quoteProcessor.BadCount + ratiosProcessor.BadCount)
+	// 	log.Printf("Processed %d messages.  %g messages per sec\n", totalSoFar, float64(totalSoFar)/seconds)
+	// 	profiles = append(profiles, n)
+	// }
+
+	// var profilesDeduped base.Envelope
+	// dedupeMap := make(map[string]bool)
+	// for _, v := range profiles {
+	// 	_, ok := dedupeMap[v.GetKey()]
+	// 	if !ok {
+	// 		profilesDeduped = append(profilesDeduped, v)
+	// 		dedupeMap[v.GetKey()] = true
+	// 	}
+	// }
+
+	// fmt.Printf("========== REPORT - TOP %v ==========\n", len(profilesDeduped))
 	fmt.Println("------STATS-------- OPS STATS --------------")
-	fmt.Printf("InfoStage Good: %d Bad %d\n", infoProcessor.GoodCount, infoProcessor.BadCount)
-	fmt.Printf("QuoteStage Good: %d Bad %d\n", quoteProcessor.GoodCount, quoteProcessor.BadCount)
-	fmt.Printf("RatiosStage Good: %d Bad %d\n", ratiosProcessor.GoodCount, ratiosProcessor.BadCount)
-	fmt.Printf("RankingStage Count %d\n", rankingProcessor.Count)
-	fmt.Printf("ProfileStage Count %d\n", profileProcessor.Count)
+	fmt.Printf("CompanyOverviewStage Good: %d Bad %d\n", companyOverviewProcessor.GoodCount, companyOverviewProcessor.BadCount)
+	// fmt.Printf("debtEquityStage Good: %d Bad %d\n", debtEquityProcessor.GoodCount, debtEquityProcessor.BadCount)
+	// fmt.Printf("RankingStage Count %d\n", rankingProcessor.Count)
 	fmt.Println("---------------------------------------")
 
-	for _, v := range profilesDeduped {
-		company := v.(profile.Profile)
-		fmt.Printf("%s | %f\n", profile.ProfileString(company), scoreMap.Data[v.GetKey()])
-	}
+	// for _, v := range profilesDeduped {
+	// 	company := v.(profile.Profile)
+	// 	fmt.Printf("%s | %f\n", profile.ProfileString(company), scoreMap.Data[v.GetKey()])
+	// }
 	fmt.Println("=====================================")
 
 	elapsed := time.Since(start)
-	total := infoProcessor.GoodCount + infoProcessor.BadCount
+	total := companyOverviewProcessor.GoodCount + companyOverviewProcessor.BadCount
 	log.Printf("Processing %d messages took %s .  %g messages per sec", total, elapsed, float64(total)/elapsed.Seconds())
 }

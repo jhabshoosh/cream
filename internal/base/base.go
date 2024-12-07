@@ -60,7 +60,7 @@ func Run(p Processor, in <-chan Message) chan Message {
 	out := make(chan Message)
 	go func() {
 		for im := range in {
-			// p.LogMessage(im)
+			p.LogMessage(im)
 			data := p.GetData(im)
 			om := p.OutputMessage(im, data)
 			if p.Filter(data) {
